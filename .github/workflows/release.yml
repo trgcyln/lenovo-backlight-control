@@ -1,0 +1,37 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [ "main", "master" ]
+    tags: [ "v*" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v2
+
+    - name: Build with csc.exe
+      run: |
+        .\build.bat
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: LenovoBacklight
+        path: bin/LenovoBacklight.exe
+
+    - name: Create Release
+      if: startsWith(github.ref, 'refs/tags/v')
+      uses: softprops/action-gh-release@v2
+      with:
+        files: bin/LenovoBacklight.exe
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
